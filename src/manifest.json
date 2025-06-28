@@ -37,7 +37,8 @@
     { "name": "system.permission" },
     { "name": "system.image" },
     { "name": "system.fetch" },
-    { "name": "system.file" }
+    { "name": "system.file" },
+    { "name": "system.vibrator" }
   ],
   "permissions": [
     {

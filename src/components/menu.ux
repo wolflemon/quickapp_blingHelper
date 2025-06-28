@@ -4,11 +4,11 @@
     <div class="header">
       <div class="user">
         <div class="head">
-          <q-icon type="love-fill" size="32" color="#ed3f14"></q-icon>
+          <q-icon type="wallpaper" size="32" color="#ed3f14"></q-icon>
         </div>
         <div class="login">
-          <text class="login-btn">红心浏览器</text>
-          <text class="more">发现更多心爱的你~</text>
+          <text class="login-btn">拍照识别助手</text>
+          <text class="more">更多功能，正在开发~</text>
         </div>
       </div>
       <div class="tool">
