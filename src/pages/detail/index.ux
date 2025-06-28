@@ -1,0 +1,200 @@
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<import name="tabbar" src="./tabbar.ux"></import>
+<import name="menu" src="../../components/menu.ux"></import>
+<import name="search" src="../../components/search.ux"></import>
+<import name="ad" src="./ad.ux"></import>
+
+<template>
+  <div class="wrap">
+    
+  </div>
+</template>
+
+<script>
+import share from '@service.share'
+import router from '@system.router'
+import storage from '@system.storage'
+import device from '@system.device'
+
+export default {
+  data() {
+    return {
+      url: '',
+      path: '',
+      title: '',
+      popup: false,
+      search: false,
+      inputValue: '',
+      menu: false,
+      adUnitId: '',
+    }
+  },
+  onInit() {
+    this.switchAdUnitIdByBrand()
+    if (this.path) {
+      this.url = this.path
+    }
+  },
+  async switchAdUnitIdByBrand() {
+    // 这个方法的作用是适配不同厂商的原生广告adUnitId
+    const res = await device.getInfo()
+    const brand = res.data.brand
+    switch (brand) {
+      case 'vivo':
+        this.adUnitId = 'vivo-adUnitId'
+        break
+      case 'oppo':
+        this.adUnitId = 'oppo-adUnitId'
+        break
+      case 'huawei':
+        this.adUnitId = 'huawei-adUnitId'
+        break
+      case 'xiaomi':
+        this.adUnitId = 'xiaomi-adUnitId'
+        break
+      default:
+        console.warn('此设备不支持广告组件！')
+    }
+  },
+  onBackPress() {
+    this.$element('web').canBack({
+      callback: (e) => {
+        if (e) {
+          this.$element('web').back()
+        } else {
+          this.popup = true
+        }
+      },
+    })
+    return true
+  },
+  share() {
+    share.share({
+      shareType: 0,
+      title: this.title,
+      summary: '',
+      imagePath: '',
+      targetUrl: this.url,
+      platforms: [],
+      success: (data) => {
+        console.log('handling success', data)
+      },
+      fail: function (data, code) {
+        console.log(`handling fail, failMess=${data},code=${code}`)
+      },
+    })
+  },
+  pageStartHandler(e) {
+    this.path = e.url
+  },
+  titleHandler(e) {
+    console.log('title', e)
+    this.title = e.title
+    setHistoryStorageData({
+      title: this.title,
+      url: this.path,
+      time: e.timeStamp,
+    })
+  },
+  refershHandler() {
+    this.$element('web').reload()
+  },
+  messageHandler(e) {
+    console.log('web', e)
+    let res = {}
+    try {
+      res = JSON.parse(e.message)
+    } catch (e) {
+      console.log(e)
+    }
+  },
+  pageFinishHandler() {
+    console.log('page finished!')
+  },
+  closeHanlder() {
+    this.popup = false
+  },
+  searchHandler() {
+    this.search = true
+  },
+  closeSearch() {
+    this.search = false
+  },
+  openMenu() {
+    this.menu = true
+  },
+  menuHandler() {
+    this.menu = false
+  },
+  scanHandler({ detail }) {
+    this.url = detail.result
+  },
+  favorHandler() {
+    setFavorStorageData({
+      title: this.title,
+      url: this.path,
+    })
+  },
+}
+</script>
+
+<style lang="less">
+.wrap {
+  flex-direction: column;
+  padding-top: 60px;
+}
+.popup-wrap {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.popup {
+  position: fixed;
+  flex-direction: column;
+  left: 50px;
+  top: 500px;
+  height: 580px;
+  width: 650px;
+  border-radius: 10px;
+  background-color: #fff;
+  padding: 20px 0;
+}
+.menu-page {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  flex-direction: column-reverse;
+  .mask {
+    flex-grow: 1;
+  }
+  .menu-wrap {
+    height: 560px;
+    width: 100%;
+    border-radius: 50px;
+    background-color: #ffffff;
+  }
+}
+.f77d1ed7 {
+  color: #f0f8ff;
+}
+.slide-in-bottom {
+  animation-name: slide_in_bottom;
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation-fill-mode: forwards;
+}
+
+@keyframes slide_in_bottom {
+  0% {
+    transform: translateY(1000px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>

@@ -1,0 +1,126 @@
+<import
+  name="q-radio-group"
+  src="qaui/src/components/radio-group/index"
+></import>
+<import name="q-radio" src="qaui/src/components/radio/index"></import>
+<import name="q-button" src="qaui/src/components/button/index"></import>
+
+<template>
+  <div>
+    <div class="wrap" if="search">
+      <stack>
+        <div class="mask" onclick="close"></div>
+        <div class="popup fade-in-bottom">
+          <q-radio-group
+            id="myGroup2"
+            current="{{current}}"
+            onchange="handleChange"
+          >
+            <q-radio
+              group="myGroup2"
+              type="list"
+              for="{{list}}"
+              value="{{$item.value}}"
+            ></q-radio>
+          </q-radio-group>
+          <q-button class="button" type="primary" onclick="confirm"
+            >确认</q-button
+          >
+        </div>
+      </stack>
+    </div>
+  </div>
+</template>
+<script>
+import storage from '@system.storage'
+
+export default {
+  data() {
+    return {
+      search: false,
+      list: [
+        {
+          id: 1,
+          value: '百度搜索',
+        },
+        {
+          id: 2,
+          value: '360搜索',
+        },
+        {
+          id: 3,
+          value: '搜狗搜索',
+        },
+      ],
+      current: '百度搜索',
+    }
+  },
+  props: {
+    visible: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  async onInit() {
+    this.$watch('visible', (n, o) => (this.search = n))
+    this.current = (await storage.get({ key: 'SEARCH_ENGINE' })).data
+    console.log('search engine', this.current)
+  },
+  handleChange({ detail }) {
+    this.current = detail.value
+  },
+  close() {
+    this.search = false
+    this.$emit('close')
+  },
+  confirm() {
+    storage.set({ key: 'SEARCH_ENGINE', value: this.current })
+    this.close()
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  stack {
+    justify-content: center;
+    align-items: center;
+  }
+  .mask {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .popup {
+    width: 500px;
+    height: 550px;
+    padding: 50px 20px;
+    border-radius: 20px;
+    background-color: #ffffff;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+.fade-in-bottom {
+  animation-name: fade_in_bottom;
+  animation-duration: 600ms;
+  animation-timing-function: cubic-bezier(0.39, 0.575, 0.565, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes fade_in_bottom {
+  0% {
+    transform: translateY(250px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>

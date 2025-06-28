@@ -1,0 +1,201 @@
+<import name="icon" src="qaui/src/components/icon/index"></import>
+<import name="q-button" src="qaui/src/components/button/index"></import>
+<template>
+  <div style="flex-direction: column">
+    <text class="warning">确定要离开本页面吗？</text>
+    <div class="ad-wrap" if="visible">
+      <div class="header {{type}}">
+        <stack style="flex-direction: row-reverse">
+          <image
+            class="cover"
+            onclick="reportAdClick(adList[0].adId)"
+            oncomplete="reportAdShow(adList[0].adId)"
+            src="{{adList[0].imgUrlList[0]}}"
+            alt="广告"
+          ></image>
+          <div class="cover-close" if="type==='pure-pic'">
+            <icon type="close" size="18" color="#999" onclick="close"></icon>
+          </div>
+        </stack>
+      </div>
+    </div>
+    <div class="btns">
+      <q-button
+        class="button"
+        type="ghost"
+        color="#dedede"
+        width="130"
+        onclick="confirmHandler"
+        >确定</q-button
+      >
+      <q-button
+        class="button"
+        type="primary"
+        width="130"
+        onclick="reportAdClick(adList[0].adId)"
+        >查看</q-button
+      >
+    </div>
+  </div>
+</template>
+<script>
+import device from '@system.device'
+import router from '@system.router'
+
+export default {
+  props: {
+    type: {
+      default: 'top-pic-bottom-text', // 'top-text-bottom-pic' 'top-pic-bottom-text' 'left-pic-right-text' 'left-text-right-pic' 'pure-pic'
+    },
+    adUnitId: {
+      default: '',
+    },
+  },
+  data() {
+    return {
+      visible: true,
+      ad: null,
+      adList: [{ adId: 0, title: '', desc: '', imgUrlList: [] }],
+      adEvent: {},
+    }
+  },
+  onInit() {
+    this.initAd()
+  },
+  async initAd() {
+    if (this.ad) {
+      return
+    }
+
+    try {
+      const res = await device.getInfo()
+      this.brand = res.data.brand
+
+      this.ad = await require('@service.ad').createNativeAd({
+        adUnitId: this.adUnitId,
+      })
+      if (!this.ad || typeof this.ad !== 'object') {
+        return
+      }
+
+      this.onEvent('Error')
+      this.onEvent('Load')
+
+      this.loadAd()
+    } catch (e) {
+      console.log('ad-log', `捕获异常 ${err}`)
+    }
+  },
+  destroyAd() {
+    if (!this.ad) {
+      return
+    }
+    this.ad.destroy()
+    this.ad = null
+    this.adEvent = {}
+  },
+  loadAd() {
+    if (!this.ad) {
+      return
+    }
+    this.ad.load()
+  },
+  reportAdClick(adId) {
+    this.ad.reportAdClick({ adId })
+  },
+  reportAdShow(adId) {
+    if (this.adList.length === 0) return
+    this.ad.reportAdShow({ adId })
+  },
+  onEvent(event) {
+    if (!this.ad) {
+      return
+    }
+
+    if (!this.adEvent[event]) {
+      this.adEvent[event] = []
+    }
+
+    let fn = null
+
+    if (event === 'Load') {
+      fn = (res) => {
+        this.adList = res.adList
+        this.visible = true
+        this.$emit('load', res)
+      }
+    } else {
+      fn = (res) => {
+        this.$emit('error', res)
+      }
+    }
+
+    this.ad[`on${event}`](fn)
+    this.adEvent[event].push(fn)
+  },
+  close(e) {
+    if (e.stopPropagation) {
+      e.stopPropagation()
+    }
+    this.destroyAd()
+    this.$emit('close')
+  },
+  confirmHandler() {
+    router.back()
+  },
+}
+</script>
+<style lang="less">
+@ratio: 1;
+
+.ad-wrap {
+  padding: 10px * @ratio 30px * @ratio 20px * @ratio 30px * @ratio;
+  width: 100%;
+  /* background-color: #ffffff; */
+  flex-direction: column;
+
+  .header {
+    flex-direction: column;
+    justify-content: space-between;
+
+    .cover-close {
+      align-self: flex-start;
+      padding-top: 40px * @ratio;
+      padding-right: 20px * @ratio;
+    }
+
+    .cover {
+      height: 320px;
+      width: 100%;
+      border-radius: 10px * @ratio;
+      margin: 20px * @ratio 0;
+    }
+
+    .title {
+      justify-content: space-between;
+
+      .content {
+        color: #333333;
+        font-size: 34px * @ratio;
+        padding-right: 20px * @ratio;
+      }
+
+      .close {
+        padding-top: 8px * @ratio;
+        flex-direction: column;
+      }
+    }
+  }
+  text {
+    font-size: 32px * @ratio;
+  }
+}
+.warning {
+  font-size: 34px;
+  text-align: center;
+  width: 100%;
+}
+.btns {
+  justify-content: space-around;
+}
+</style>

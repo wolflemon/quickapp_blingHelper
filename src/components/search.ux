@@ -1,0 +1,119 @@
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+
+<template>
+  <div>
+    <div class="input-page" if="search">
+      <div class="input-wrap">
+        <div class="input">
+          <input
+            id="input"
+            type="text"
+            value="{{inputValue}}"
+            placeholder="请输入网址或搜索词"
+            onchange="changeHandler"
+          />
+          <q-icon
+            onclick="clearBtn"
+            type="close-circle-fill"
+            size="18"
+            color="#000"
+          ></q-icon>
+          <text class="btn" if="inputValue" onclick="searchBtn">搜索</text>
+          <text class="btn" if="inputValue.length === 0" onclick="cancelBtn"
+            >取消</text
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+
+export default {
+  data() {
+    return {
+      search: false,
+      inputValue: '',
+    }
+  },
+  props: {
+    visible: {
+      default: false,
+    },
+  },
+  onInit() {
+    this.$watch('visible', (n, o) => {
+      if (n) this.searchHandler()
+    })
+  },
+  searchHandler() {
+    this.search = true
+    setTimeout(() => {
+      this.$element('input').focus({ focus: true })
+      this.$element('input').select()
+    }, 100)
+  },
+  changeHandler(e) {
+    this.inputValue = e.value
+  },
+  close() {
+    this.search = false
+    this.$emit('close')
+  },
+  clearBtn() {
+    this.inputValue = ''
+  },
+  searchBtn() {
+    let url = 'https://www.baidu.com/s?word=' + this.inputValue
+    this.$element('input').focus({ focus: false })
+    router.push({
+      uri: 'pages/detail',
+      params: {
+        path: url,
+      },
+    })
+    this.close()
+  },
+  cancelBtn() {
+    this.$element('input').focus({ focus: false })
+    this.close()
+  },
+}
+</script>
+<style lang="less">
+.input-page {
+  position: fixed;
+  background-color: #f8f8f8;
+  height: 100%;
+  width: 100%;
+  flex-direction: column-reverse;
+  .input-wrap {
+    height: 160px;
+    width: 100%;
+    background-color: #fff;
+    justify-content: center;
+    align-items: center;
+    .input {
+      width: 90%;
+      height: 100px;
+      padding: 0 20px;
+      border: 4px solid #000;
+      border-radius: 20px;
+      input {
+        flex-grow: 1;
+        font-size: 30px;
+        font-weight: bold;
+      }
+      .btn {
+        font-weight: bold;
+        color: #000;
+        margin-left: 20px;
+        margin-right: 10px;
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+</style>

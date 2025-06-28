@@ -1,0 +1,580 @@
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<import name="tabbar" src="./tabbar.ux"></import>
+<import name="menu" src="../../components/menu.ux"></import>
+<import name="search" src="../../components/search.ux"></import>
+<import name="privacy" src="./privacy.ux"></import>
+
+<template>
+  <div class="wrap">
+    <!-- 左上角“联系作者” -->
+    <div class="feedback" onclick="contactAuthor">
+      <q-icon type="message" size="22" color="#5cadff"></q-icon>
+      <text>联系作者</text>
+    </div>
+    
+    <!-- 大按钮居中 -->
+    <div class="big-button" onclick="takePhoto">
+      <text>拍照识别</text>
+    </div>
+    
+    <!-- 底部导航 -->
+    <tabbar onmenu="openMenu"></tabbar>
+    <div class="menu-page" if="menu">
+      <div class="menu-wrap {{menu?'slide-in-bottom':''}}">
+        <menu onclose="menuHandler" onshare="share"></menu>
+      </div>
+      <div class="mask" onclick="menuHandler"></div>
+    </div>
+    
+    
+    <privacy></privacy>
+  </div>
+</template>
+
+<script>
+
+
+
+import barcode from '@system.barcode'
+import router from '@system.router'
+import share from '@service.share'
+
+import prompt from '@system.prompt'
+import fetch from '@system.fetch'
+import texttoaudio from '@service.texttoaudio'
+import media from '@system.media'
+import image from '@system.image'
+import file from '@system.file'
+import vibrator from '@system.vibrator'
+//var Bmob = require('../../common/Bmob-1.7.1.min.js')
+//Bmob.initialize("d8762f473003b6d5af4ee1092ee71706", "6bd21078e1e71ee1e28fc1cad7240642");
+var Bmob = require('../../common/Bmob-2.5.1.min.js')
+//import Bmob from "hydrogen-js-sdk";
+Bmob.initialize("b2b1eeeaf0379283", "1234567891011121");
+
+export default {
+  data() {
+    return {
+      menu: false,
+      search: false,
+      inputValue: '',
+      links: [
+        {
+          icon: 'https://www.easyicon.net/api/resizeApi.php?id=1193371&size=128',
+          name: '百度',
+          link: 'https://www.baidu.com',
+        },
+        {
+          icon: 'https://www.easyicon.net/api/resizeApi.php?id=1193382&size=128',
+          name: '豆瓣',
+          link: 'https://www.douban.com',
+        },
+        {
+          icon: 'https://www.easyicon.net/api/resizeApi.php?id=1193410&size=128',
+          name: '淘宝',
+          link: 'https://www.taobao.com',
+        },
+        {
+          icon: 'https://www.easyicon.net/api/resizeApi.php?id=1193419&size=128',
+          name: '新浪',
+          link: 'https://www.sina.com.cn',
+        },
+      ],
+    }
+  },
+  /***************** */
+  //takephoto,向compressAndUpload传递url和size
+ takePhoto() {
+  console.log('开始选择图片')
+  media.takePhoto({
+    success: res => {
+      console.log('图片选择成功，路径：', res.uri, '大小：', res.size)
+      //prompt.showToast({
+  //message: `图片选择成功，路径：${res.uri} 大小：${(res.size / 1024).toFixed(1)}KB`
+  //})
+      this.compressAndUpload(res.uri, res.size)
+    },
+    fail: () => {
+      console.log('图片选择失败')
+      prompt.showToast({ message: '选择图片失败' })
+    }
+  })
+},
+
+//压缩图片到1M以下
+compressAndUpload(imageUri, size) {
+  console.log(`收到图片，大小约 ${(size / 1024).toFixed(1)} KB`)
+  prompt.showToast({ message: `收到图片，大小约 ${(size / 1024).toFixed(1)} KB` })
+
+  if (size <= 1048576) {
+    console.log('图片不大，直接上传')
+    this.uploadBinaryByPost(imageUri)
+  } else {
+    console.log('图片大于1MB，开始压缩...')
+    this.tryCompress(imageUri, 75, 2)  // 初始压缩参数
+  }
+},
+
+tryCompress(uri, quality, ratio) {
+  image.compressImage({
+    uri: uri,
+    quality: quality,
+    ratio: ratio,
+    success: res => {
+      console.log(`压缩成功: ${res.uri}`)
+
+      // 压缩成功后直接取压缩后的图片信息（包含大小）
+      image.getImageInfo({
+        uri: res.uri,
+        success: info => {
+          console.log(`压缩后图片大小: ${(info.size / 1024).toFixed(1)} KB, 宽: ${info.width}, 高: ${info.height}`)
+
+          if (info.size <= 1048576) {  // 小于等于1MB
+            this.uploadBinaryByPost(res.uri)
+          } else if (quality > 20) {  // 可以继续压缩
+            console.log('继续压缩...')
+            this.tryCompress(res.uri, quality - 15, ratio + 1)
+          } else {
+            prompt.showToast({ message: '图片压缩不到1MB，请换图' })
+          }
+        },
+        fail: (data, code) => {
+          console.log(`获取图片信息失败, code=${code}`)
+          prompt.showToast({ message: '获取图片信息失败' })
+        }
+      })
+    },
+    fail: err => {
+      console.log('图片压缩失败:', JSON.stringify(err))
+      prompt.showToast({ message: '图片压缩失败' })
+    }
+  })
+},
+
+/*uploadCompressedImage(compressedUri) {
+  uploadtask.uploadFile({
+    url: 'https://file.bmob.cn/2/files/d8762f473003b6d5af4ee1092ee71706',
+    filePath: compressedUri,
+    name: 'file',
+    header: {
+      'Content-Type': 'multipart/form-data'
+    },
+    success: res => {
+      console.log('正式上传成功:', res)
+      const data = JSON.parse(res.data)
+      const fileUrl = data.url
+      this.saveFileUrlToDatabase(fileUrl)
+    },
+    fail: err => {
+      console.log('正式上传失败:', err)
+      prompt.showToast({ message: '上传失败' })
+    }
+  })
+},
+
+uploadCompressedImage(compressedUri){
+  let params =　{
+    funcName: 'UploadImage',
+    data: {
+      data : objectId
+    }
+  }
+
+  prompt.showToast({
+    message: '正在调用 uploadCompressedImage 云函数...'
+  });
+
+  Bmob.functions(params.funcName, params.data)
+    .then((response) => {  // 用箭头函数保证 this 正确
+      console.log('云函数返回:', response);
+      
+prompt.showToast({
+        message: '云函数调用成功，准备播报'
+      });
+
+      // 调用 speakResult
+      this.speakResult(response.data);  // 假设返回结构是 { code: 200, data: {...} }
+    })
+  .catch(function (error) {
+    console.log(error);
+    prompt.showToast({ message: `失败: ${JSON.stringify(error)}` });
+  });
+},*/
+arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    // Base64 字符集
+    const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    let output = '';
+    let i = 0;
+    while (i < binary.length) {
+        const char1 = binary.charCodeAt(i++);
+        const char2 = binary.charCodeAt(i++);
+        const char3 = binary.charCodeAt(i++);
+
+        const enc1 = char1 >> 2;
+        const enc2 = ((char1 & 3) << 4) | (char2 >> 4);
+        let enc3 = ((char2 & 15) << 2) | (char3 >> 6);
+        let enc4 = char3 & 63;
+
+        if (isNaN(char2)) {
+            enc3 = enc4 = 64;
+        } else if (isNaN(char3)) {
+            enc4 = 64;
+        }
+
+        output += base64Chars.charAt(enc1) + base64Chars.charAt(enc2) +
+                  base64Chars.charAt(enc3) + base64Chars.charAt(enc4);
+    }
+    return output;
+},
+
+uploadBinaryByPost(compressedUrl) {
+  prompt.showToast({ message: '开始读取文件...' });
+
+  file.readArrayBuffer({
+    uri: compressedUrl,
+    success:  (data) => {
+      console.log('文件读取成功，开始转换为 base64...');
+      prompt.showToast({ message: '文件读取成功，正在转换 base64...' });
+
+      const base64Str = this.arrayBufferToBase64(data.buffer);
+      vibrator.vibrate({
+      mode: 'long'
+    })
+      console.log('Base64 转换完成，开始上传，长度:', base64Str.length);
+      prompt.showToast({ message: `Base64 转换完成，长度: ${base64Str.length}` });
+      this.postBinaryToServer(base64Str);
+    },
+    fail:  (data, code) => {
+      console.error(`文件读取失败，code = ${code}`);
+      prompt.showToast({ message: `文件读取失败 code=${code}` });
+    }
+  });
+},
+
+testUpload() {
+  const dummyBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAYAAACLz2ctAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAhHSURBVHhe7drvaxrZGsDx+8cGghSGwBCQskFWLmteyFIpG0JlqYHrQixkXjSFZmEtrIUmFC8Xy+KLuFwsi8uSEIQgFCE890yccc6ME+PPPnfl+4EDXTXiznydc2bGfwigiAChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChigChaiUBDofBP/6Ovgxllo8/vO1L/yYYX4IHsbTlAhz2pHGYlS3nQM5vg8ceEe7I7qeGNN6fSu1FWYo5V5zdirTughcZsR2+inGbltlAGt9vyVbGlcJRXTr94OEU5z+Y122NRvakFzw6xXCQ/jnmHENrm2yiJQJsSflJtFO2cp50w41105Tqd1lxXXc0djLR66aM/Nur4A3iO3wl44fz4J0tf3iSHb8mK94fweMp5g7w4mD8+sXH9M+0CZY6Ag7MRnasDZZ91R09Eduxc4ydqnRG7/BVAmz9GH0xnJet4NErab/3j87xUf02ei/3+enE8433TekOgrfwEeBMllwDDkwojrXBHKl8Mg8nAsw4wZHQH7milM20W35REe8Xf8e1pOtPN4kpMhbgbiH4m/lG6RvryJsM8PpM8tvBc9tFqY+XEOdyEP7NXCMRix3gs3p8av2tGm2fp1Vp28/d1KUUPkeAM7g1O8wJNlj2QBp/mpDsAJ96MsOENSEWYNr0OYPeiVmfpr6H/8WJ4tx7PfqEnQ/+OpAAv6blAzQGFxUpnbSlH64B7QDdkpxOTFfpo/k5msPWGuBlVdzw8ae10dr1cy36zJm8VN/FPxtT8HqsJMAJC64B7cV9WoCxoKaM8H1SA7zrSu1p+FpHyhdX0v+zJdVc+Ji9HozYn4eTkNVZOMDOz5NrrtrH4DrG/3OAj302pyKtL5OXUOrPotdkfzJH+8TzE9cGmYJnsnCAsUCCMQ4otgZMbmBrXJ9LeSf6++Kv06fgWFBPnOjExgzHuiQ0NUCzIvXGR8DkcKV6aV6ywNFr4qhIgDNZT4D2xs+dml3uL/pdyR9b60Sj93ovet1uVTrWc48FmNzhac+lByhydVGV2ht/3XYmB9ngeTPcn4KLQKsOcOFBgA+6ao8W3/bifLzj7bAO63J+GF2qyXxbk7Z/yeOzJ3vhZRAziu/sFfx6AwwNPpQkEz4fnoz4rtvWycVswz6BukeAM1n6JMQOZbTjB1IvRo/5dze6bwqxC9ZbTlay4aUbf/zzTKJ7ICNrD9D+Amzvifc5eHxVpt2KmzoFxwe34h4xEeD1qeTDjWt9gwftmuQz0WvHI3YROLLWAO1rl2Y4z2riHZkTqecFye6fSe+meX+POnmS9fCoSfMmeO9Z7gHPEeBoDGb6wcTf0YoD7ErrpXVnZLc2vrVm9oz0zJFwPOUFI/OsEVsXhh4LcNqYHmBPTq1lw8TwXzf3Wbw1Va5k6k2OA7G+PhtltQHux6fa/Bt/Yh3K1SdPirsP/yBhvC60rC9AMV+SKT+OIMCvasVHwLb57+AI6JSk9roke/YvZsLhFKRyaJ2o+GOnJPW/gjc10gLsf6ylTH+TI7we+eAUfGmmQMeVvWJZKid1cxKRuB8902WktlTHl3OsAKecwNRfFeNr4dhwpPjK/yxpf9ueWCNviiUDHErDvkDr/xrmritezpHSh8HEr2X84ex746Pd1bvEDslGU3ZagPN6MMA0d0MTVU86H5vSvbQDfOhetn098ZGz1WFPmsdmdhif9IR/Z8YTJ3p8KyPZF9N/l7hpFg/wrh+7vDIa5lv8S0+G/b45F/YN5Pz5aLrLfFOW+u+TW3bwn4pk/R2wE/9R69oCHHSlaY4q9ZOKOVoWZc+/iB07OcrLmVkyrCLA4V8dqR/lrcDMcMxJ17+t+87m/bv/PZWCfVXAhOh+VxbvY1cGm3r2EVgwQP+XxFPWdM6eFI+DG/Zvq1I5fmhqGY36vw6k8nb07/B6WizATPyux6zDvjsyDvDu3LrTkDbMF2GJNWD/siHeC3M27UxuH2f/VLp+ULEpPgj8ti3efvILPRqZnayULxLXGTfEwkfAzrEbbaRcRWrfp2+8+YYrtd9H7x8LcBVjfBS1f4wQH/e/W8x50lnmJCTtb3cK4v1mHf3TArw3lJ5Z5xas25P3Y7sojc3sb4kpONyIudroW22m5OZxYrqZd1iXbdZ2BPSXBYfWCcinrln7Ja6z2YFsZ8RJeW/XdSQz/n+NT8HhpajMrjnZem+WJMnLTA8GGPJD9MY/qM38OPnrnE2xxEnIlZy9NGeIyYvI94v5rrQS0+xMox2d6zWPrJ191AwenU/vbWGx93g0EN+UNeBt1xxFpyzeZnr/wJee9K6Df2+gJQIElkeAUEWAUEWAUEWAUEWAUEWAUEWAUEWAUEWAUEWAUEWAUEWAUEWAUEWAUCTyP3T+WsHqr0LnAAAAAElFTkSuQmCC';
+  this.postBinaryToServer(dummyBase64);
+
+},
+
+/*
+uploadToBmob(imageBase64) {
+  console.log('开始上传图片到 Bmob，base64 长度:', imageBase64.length);
+  prompt.showToast({ 
+  message: `开始上传图片到 Bmob，base64 长度: ${imageBase64.length}` 
+});
+  fetch.fetch({
+    url: 'http://cloud.bmobapp.com/6bd21078e1e71ee1e28fc1cad7240642/analyzeImage',
+    method: 'POST',
+  header: {
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+  data: 'name=jeff',
+    success: res => {
+      console.log('上传成功，返回:', res.data);
+      prompt.showToast({ message: '上传并识别成功' });
+
+      const data = JSON.parse(res.data);
+      this.speakResult(data);
+    },
+    fail: (code,data) => {
+      
+      console.log(`上传失败，code=${code}, data=${JSON.stringify(data)}`);
+      prompt.showToast({ message: `上传失败 code=${code}` });
+    }
+  });
+},*/
+  postBinaryToServer(imageBase64){
+    let params = {
+    funcName: 'UploadImage',
+    data: {
+      data : imageBase64
+      }
+  }
+
+  prompt.showToast({
+    message: '正在调用 UploadImage 云函数...'
+  });
+
+  Bmob.functions(params.funcName, params.data)
+    .then((response) => {  // 用箭头函数保证 this 正确
+      console.log('云函数返回:', response);
+      // 打印 objectId，先尝试从 response.data.objectId 取
+    const objectId = response.objectId || (response.data && response.data.objectId);
+    console.log('提取到的 objectId:', objectId);
+      prompt.showToast({
+        message: '云函数调用成功，返回ID'
+      });
+
+      // 调用 speakResult
+      this.ID2Result(objectId);  // 假设返回结构是 { code: 200, data: {...} }
+    })
+  .catch(function (error) {
+    console.log(error);
+    prompt.showToast({ message: `失败: ${JSON.stringify(error)}` });
+  });
+  },
+
+testID2Result() {
+  const testObjectId = 'bfb99d9dc2'  // 这里换成你真实的 objectId 或测试用的 objectId
+  prompt.showToast({
+    message: `开始请求云函数，objectId: ${testObjectId}`
+  });
+  this.ID2Result(testObjectId)
+},
+
+ID2Result(objectId){
+  let params =　{
+    funcName: 'analyzeImage',
+    data: {
+      objectId : objectId
+    }
+  }
+
+  prompt.showToast({
+    message: '正在调用 analyzeImage 云函数...'
+  });
+
+  Bmob.functions(params.funcName, params.data)
+    .then((response) => {  // 用箭头函数保证 this 正确
+      console.log('云函数返回:', response);
+      
+prompt.showToast({
+        message: '云函数调用成功，准备播报'
+      });
+
+      // 调用 speakResult
+      this.speakResult(response.data);  // 假设返回结构是 { code: 200, data: {...} }
+    })
+  .catch(function (error) {
+    console.log(error);
+    prompt.showToast({ message: `失败: ${JSON.stringify(error)}` });
+  });
+},
+
+testSpeakResult() {
+  const dummyResult = {
+    objects: ['猫', '桌子'],
+    text: '这是一个测试文字\n换行了\n坏东西\n快应用是坏东西'
+  }
+
+  this.speakResult(dummyResult)
+},
+
+speakResult(result) {
+  let speechText = ""
+
+  if (result.objects && result.objects.length > 0) {
+    speechText += `识别到物体：${result.objects.join('、')}。`
+  }
+
+  if (result.text && result.text.length > 0) {
+    const textFormatted = result.text.replace(/\n/g, '，')
+    speechText += `识别到文字：${textFormatted}。`
+  }
+
+  if (!speechText) {
+    speechText = "未能识别到有效内容，请尝试重新拍摄。"
+  }
+  console.log(`准备播报内容: ${speechText}`)
+  prompt.showToast({
+  message: `准备播报内容: ${speechText}`
+});
+
+  // 调用 texttoaudio 播报
+  texttoaudio.speak({
+    lang: 'zh_CN',     // 中文
+    content: speechText,
+    pitch: 1.0,        // 音高，1为正常
+    rate: 1.0,         // 语速，1为正常
+    success: function(data) {
+      console.log(`语音播报成功，utteranceId = ${data.utteranceId}`)
+    },
+    fail: function(data, code) {
+      console.log(`语音播报失败，code = ${code}`)
+    }
+  })
+},
+
+  contactAuthor() {
+      prompt.showToast({ message: '请联系：wolflemon973@iamadog.com' }) // 你可以换成你想要的内容
+    },
+  /****************** */
+  qrcodeHandler() {
+    barcode.scan({
+      success: (data) => {
+        this.$emit('scan', data)
+        router.push({
+          uri: 'pages/detail',
+          params: {
+            path: data.result,
+          },
+        })
+        console.log(`handling success: ${data.result}`)
+      },
+      fail: (data, code) => {
+        console.log(`handling fail, code = ${code}`)
+      },
+    })
+  },
+  openSearch() {
+    this.search = true
+  },
+  closeSearch() {
+    this.search = false
+  },
+  openMenu() {
+    this.menu = true
+  },
+  menuHandler() {
+    this.menu = false
+  },
+  linkClick(link) {
+    router.push({
+      uri: 'pages/detail',
+      params: {
+        path: link,
+      },
+    })
+  },
+  share() {
+    share.share({
+      shareType: 0,
+      title: '爱心浏览器',
+      summary: '',
+      imagePath: '',
+      targetUrl: 'https://hapjs.org/app/com.your.package.name',
+      platforms: [],
+      success: (data) => {
+        console.log('handling success', data)
+      },
+      fail: function (data, code) {
+        console.log(`handling fail, failMess=${data},code=${code}`)
+      },
+    })
+  },
+  gotoPage(path) {
+    router.push({ uri: path })
+  },
+}
+</script>
+
+
+<style lang="less">
+.wrap {
+  padding-top: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .big-button {
+  
+  top: 70%;
+  left: 70%;
+  transform: translate(0, 0);
+  width: 600px;
+  height: 1000px;
+  border-radius: 30px;
+  background-color: #FF7F50	;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  box-shadow: 0 10px 30px rgba(10, 9, 9, 0.3);
+
+  text {
+    margin-top: 0px;
+    font-size: 52px;
+    color: rgb(59, 15, 63);
+    font-weight: bold;
+  }
+}
+
+  .input {
+    height: 120px;
+    border: 4px solid #000;
+    border-radius: 30px;
+    justify-content: space-between;
+    width: 90%;
+    padding: 20px;
+    margin: 40px 0;
+    text {
+      flex-grow: 1;
+    }
+  }
+  .links {
+    justify-content: space-between;
+    width: 90%;
+    flex-wrap: wrap;
+    padding: 20px;
+    .item {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      object-fit: contain;
+    }
+    .item:active {
+      background-color: #f8f8f8;
+      opacity: 0.5;
+    }
+  }
+  .menu-page {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    flex-direction: column-reverse;
+    .mask {
+      flex-grow: 1;
+    }
+    .menu-wrap {
+      height: 560px;
+      width: 100%;
+      border-radius: 50px;
+      background-color: #ffffff;
+    }
+  }
+  .f77d1ed7 {
+    color: #531232;
+  }
+  .feedback {
+    position: fixed;
+    top: 100px;
+    left: 50px;
+    background-color: #f8f8f8;
+    border-radius: 50px;
+    height: 100px;
+    width: 100px;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text {
+      font-size: 20px;
+      font-weight: bold;
+    }
+  }
+  .slide-in-bottom {
+    animation-name: slide_in_bottom;
+    animation-duration: 500ms;
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes slide_in_bottom {
+    0% {
+      transform: translateY(1000px);
+      opacity: 0;
+    }
+
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+</style>

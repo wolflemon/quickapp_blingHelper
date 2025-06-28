@@ -1,0 +1,83 @@
+<import name="q-titlebar" src="qaui/src/components/titlebar/index"></import>
+<import name="q-list" src="qaui/src/components/list/index"></import>
+<import name="cache" src="./cache.ux"></import>
+<import name="contact" src="./contact.ux"></import>
+<import name="search" src="./search.ux"></import>
+
+<template>
+  <div class="wrap">
+    <q-titlebar back="true" title="设置"></q-titlebar>
+    <q-list data="{{ listData }}" onitem-tap="itemTap"></q-list>
+    <cache visible="{{cache}}" onclose="closeCache"></cache>
+    <contact visible="{{contact}}" onclose="closeContact"></contact>
+    <search visible="{{search}}" onclose="closeSearch"></search>
+  </div>
+</template>
+<script>
+import router from '@system.router'
+
+export default {
+  data() {
+    return {
+      cache: false,
+      contact: false,
+      search: false,
+      listData: [
+        {
+          title: '搜索引擎',
+          extra: 'rightArrow',
+        },
+        {
+          title: '关于我们',
+          extra: 'rightArrow',
+        },
+        {
+          title: '隐私协议',
+          extra: 'rightArrow',
+        },
+        {
+          title: '清除缓存',
+          extra: 'rightArrow',
+        },
+        {
+          title: '联系我们',
+          extra: 'rightArrow',
+        },
+      ],
+    }
+  },
+  itemTap({ detail }) {
+    console.log('item', detail)
+    if (detail.index === 0) {
+      this.search = true
+    }
+    if (detail.index === 1) {
+      router.push({ uri: 'pages/about' })
+    }
+    if (detail.index === 2) {
+      router.push({ uri: 'pages/privacy' })
+    }
+    if (detail.index === 3) {
+      this.cache = true
+    }
+    if (detail.index === 4) {
+      this.contact = true
+    }
+  },
+  closeCache() {
+    this.cache = false
+  },
+  closeContact() {
+    this.contact = false
+  },
+  closeSearch() {
+    this.search = false
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  padding-top: 60px;
+  flex-direction: column;
+}
+</style>

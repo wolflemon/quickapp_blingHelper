@@ -1,0 +1,32 @@
+<import name="q-titlebar" src="qaui/src/components/titlebar/index"></import>
+
+<template>
+  <div class="wrap">
+    <q-titlebar back="true" title="我的书架"></q-titlebar>
+    <image
+      class="no-data"
+      src="https://zhanstatic.vivo.com.cn/wukong/img/d9aa597a-5d60-4b37-a326-abbbf2d8ded1.png.webp"
+    ></image>
+  </div>
+</template>
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+
+export default {
+  data() {
+    return {}
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  padding-top: 60px;
+  flex-direction: column;
+  .no-data {
+    height: 400px;
+    margin-top: 400px;
+    align-self: center;
+  }
+}
+</style>

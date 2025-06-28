@@ -1,0 +1,60 @@
+{
+  "name": "quickapp-code-1",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "node": ">=8.10"
+  },
+  "scripts": {
+    "start": "hap server --watch",
+    "build": "hap build",
+    "release": "hap release",
+    "server": "hap server",
+    "watch": "hap watch",
+    "gen": "node ./scripts/gen/index.js",
+    "precommit-msg": "echo '🚧 start pre-commit checks ...' && exit 0",
+    "prettier": "node ./scripts/selfCloseInputTag.js && prettier --write \"src/**/*.{js,ux,less,scss,css}\""
+  },
+  "dependencies": {
+    "apex-ui": "^1.9.4",
+    "hydrogen-js-sdk": "^2.6.1",
+    "qaui": "^1.0.16"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.14.0",
+    "@types/quickapp": "npm:quickapp-interface@^1.0.0",
+    "colors": "^1.4.0",
+    "hap-toolkit": "^1.9.2",
+    "husky": "^6.0.0",
+    "less": "^4.1.1",
+    "less-loader": "^8.1.1",
+    "lint-staged": "^11.0.0",
+    "prettier": "^2.3.0",
+    "prettier-plugin-ux": "^0.3.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "semi": false,
+    "printWidth": 80,
+    "proseWrap": "never",
+    "tabWidth": 2
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run precommit-msg && lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/**.{ux,js,json,pcss,md,vue,less,scss}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "keywords": [
+    "快应用",
+    "快应用模版"
+  ],
+  "browserslist": [
+    "chrome 65"
+  ]
+}

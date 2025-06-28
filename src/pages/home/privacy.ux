@@ -1,0 +1,145 @@
+<import name="q-button" src="qaui/src/components/button/index"></import>
+
+<template>
+  <div>
+    <div class="wrap" if="privacy === ''">
+      <stack>
+        <div class="mask" onclick="close"></div>
+        <div class="popup fade-in-bottom">
+          <text class="name">温馨提示</text>
+          <text class="content"
+            >感谢使用本软件，我们非常重视您的隐私和个人信息保护。在您使用我们提供的服务前，请务必认真阅读<a
+              href="/privacy"
+              >《隐私协议》</a
+            >和<a href="/privacy">《用户协议》</a>所有的条款及内容。</text
+          >
+          <div class="btn">
+            <input
+              class="btn btn-ghost"
+              type="button"
+              onclick="refuse"
+              value="不同意"
+            />
+            <input
+              class="btn btn-ghost"
+              type="button"
+              style="background-color: #456fff; color: #ffffff"
+              onclick="agree"
+              value="同意并使用服务"
+            />
+          </div>
+        </div>
+      </stack>
+    </div>
+  </div>
+</template>
+
+<script>
+import storage from '@system.storage'
+import router from '@system.router'
+
+export default {
+  data() {
+    return {
+      privacy: '',
+    }
+  },
+  async onInit() {
+    this.privacy = (await storage.get({ key: 'PRIVACY' })).data
+  },
+  agree() {
+    this.privacy = 'agree'
+    storage.set({ key: 'PRIVACY', value: 'agree' })
+  },
+  refuse() {
+    storage.set({ key: 'PRIVACY', value: '' })
+    this.$app.exit()
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  stack {
+    justify-content: center;
+    align-items: center;
+  }
+  .mask {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .popup {
+    width: 600px;
+    padding: 40px 20px;
+    border-radius: 20px;
+    background-color: #ffffff;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .name {
+      text-align: center;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .content {
+      padding: 30px 20px;
+      text-indent: 60px;
+      color: #000;
+      line-height: 46px;
+      font-size: 28px;
+      .f77d1ed7 {
+        color: #f0f8ff;
+      }
+      a {
+        color: #0000ff;
+      }
+    }
+
+    .btn {
+      width: 100%;
+      height: 100px;
+      padding: 0 20px;
+      justify-content: space-between;
+    }
+    .btn-ghost {
+      width: 250px;
+      height: 60px;
+      border-radius: 50px;
+      font-size: 28px;
+      text-align: center;
+      background-color: #ffffff;
+      border-top-width: 2.08333333px;
+      border-right-width: 2.08333333px;
+      border-bottom-width: 2.08333333px;
+      border-left-width: 2.08333333px;
+      border-style: solid;
+      border: 1px solid #456fff;
+    }
+    .fade-in-bottom {
+      animation-name: fade_in_bottom;
+      animation-duration: 500ms;
+      animation-timing-function: cubic-bezier(0.39, 0.575, 0.565, 1);
+      animation-fill-mode: forwards;
+    }
+  }
+}
+
+@keyframes fade_in_bottom {
+  0% {
+    transform: translateY(250px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>

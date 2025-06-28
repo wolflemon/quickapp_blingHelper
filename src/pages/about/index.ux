@@ -1,0 +1,50 @@
+<import name="q-titlebar" src="qaui/src/components/titlebar/index"></import>
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<import name="q-footer" src="qaui/src/components/footer/index"></import>
+
+<template>
+  <div class="wrap">
+    <q-titlebar back="true" title="关于我们"></q-titlebar>
+    <div class="logo">
+      <q-icon type="love-fill" size="80" color="#ed3f14"></q-icon>
+      <text class="name">爱心浏览器</text>
+      <text class="description"
+        >爱心浏览器是一款轻量即点即用的浏览器软件，无需下载，随用随走。界面清爽，操作简便。</text
+      >
+    </div>
+    <q-footer content="v1.0.0"></q-footer>
+  </div>
+</template>
+<script>
+export default {
+  data() {
+    return {}
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  padding-top: 60px;
+  padding-bottom: 60px;
+  flex-direction: column;
+  justify-content: space-between;
+  .logo {
+    flex-direction: column;
+    .name {
+      font-size: 40px;
+      font-weight: bold;
+      color: #000;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .f77d1ed7 {
+      color: #f0f8ff;
+    }
+    .description {
+      padding: 60px;
+      font-size: 30px;
+      color: #000;
+    }
+  }
+}
+</style>

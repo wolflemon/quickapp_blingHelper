@@ -1,0 +1,62 @@
+.DS_Store
+node_modules
+/dist
+/build
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+.ide
+.quickapp.preview.json
+
+/.quickapp/
+/src/.preview/ # 预览相关文件
+/src/**/*.debug.js # 调试使用的JS文件，通常在真机调试时生成
+# Node.js 依赖管理
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 开发工具和IDE相关文件
+.DS_Store # macOS 系统文件
+.idea/ # IntelliJ IDEA / WebStorm 等IDE配置
+.vscode/ # VS Code 编辑器配置 (如果团队统一配置可以考虑不忽略)
+*.sublime-project # Sublime Text 项目文件
+*.sublime-workspace # Sublime Text 工作区文件
+*.project
+*.settings
+*.classpath
+
+# 日志文件
+*.log
+logs/
+
+# 操作系统临时文件
+*.tmp
+*.bak
+*~
+Thumbs.db # Windows 系统文件
+
+# 敏感信息或本地配置文件 (如果存在)
+.env
+.env.*
+config.local.js
+*.local.js
+
+# 其他可能不需要提交的文件
+/temp/ # 临时文件夹

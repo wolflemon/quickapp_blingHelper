@@ -1,0 +1,125 @@
+<import name="q-button" src="qaui/src/components/button/index"></import>
+
+<template>
+  <div>
+    <div class="wrap" if="contact">
+      <stack>
+        <div class="mask" onclick="close"></div>
+        <div class="popup fade-in-bottom">
+          <div class="line">
+            <text>电话：0741-77777777</text>
+            <q-button class="button" type="ghost" size="small" onclick="call('77777777')">呼叫</q-button>
+          </div>
+          <div class="line">
+            <text>邮箱：users@sample.com</text>
+            <q-button class="button" type="ghost" size="small" onclick="copy('users@sample.com')">复制</q-button>
+          </div>
+          <div class="line">
+            <text>QQ：88888888</text>
+            <q-button class="button" type="ghost" size="small" onclick="copy('88888888')">复制</q-button>
+          </div>
+        </div>
+      </stack>
+    </div>
+  </div>
+</template>
+<script>
+import clipboard from '@system.clipboard'
+import prompt from '@system.prompt'
+import router from '@system.router'
+
+export default {
+  data() {
+    return {
+      contact: false,
+    }
+  },
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
+    }
+  },
+  onInit() {
+    this.$watch('visible', (n, o) => this.contact = n)
+  },
+  close() {
+    this.cache = false
+    this.$emit('close')
+  },
+  copy(data) {
+    clipboard.set({
+      text: data,
+      success: () => {
+        prompt.showToast({
+          message: '已复制到剪贴板'
+        })
+      }
+    })
+  },
+  call(tel) {
+    router.push({
+      uri: `tel:${tel}`
+    })
+  }
+}
+</script>
+<style lang="less">
+.wrap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  stack {
+    justify-content: center;
+    align-items: center;
+  }
+  .mask {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .f77d1ed7{
+    color: #f0f8ff;
+  }
+  .popup {
+    width: 600px;
+    padding: 40px 20px;
+    border-radius: 20px;
+    background-color: #ffffff;
+    flex-direction: column;
+
+    .line {
+      height: 100px;
+      align-items: center;
+
+      text {
+        font-weight: bold;
+        font-size: 30px;
+        width: 580px;
+        color: #000;
+      }
+    }
+  }
+}
+.fade-in-bottom {
+  animation-name: fade_in_bottom;
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(0.39, 0.575, 0.565, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes fade_in_bottom {
+  0% {
+    transform: translateY(250px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>
+

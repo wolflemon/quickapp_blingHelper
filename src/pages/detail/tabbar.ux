@@ -1,0 +1,115 @@
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<template>
+  <div class="wrap">
+    <div class="tab">
+      <q-icon
+        type="previous-step-fill"
+        size="28"
+        color="#000"
+        onclick="homeHandler"
+      ></q-icon>
+    </div>
+    <div class="tab">
+      <q-icon
+        type="scanner-fill"
+        size="26"
+        color="#000"
+        onclick="qrcodeHandler"
+      ></q-icon>
+    </div>
+    <div class="location" onclick="urlHandler">
+      <text>{{ title }}</text>
+    </div>
+    <div class="tab" id="refresh">
+      <q-icon
+        onclick="refresh"
+        type="rotate-fill"
+        size="24"
+        color="#000"
+      ></q-icon>
+    </div>
+    <div class="tab" onclick="menuHandler">
+      <q-icon type="menu-fill" size="28" color="#000"></q-icon>
+    </div>
+  </div>
+</template>
+<script>
+import router from '@system.router'
+import barcode from '@system.barcode'
+
+const keyframes = [
+  {
+    transform: 'rotate(0deg)',
+    time: 0,
+  },
+  {
+    transform: 'rotate(360deg)',
+    time: 100,
+  },
+]
+export default {
+  props: {
+    title: {
+      default: '',
+    },
+  },
+  refresh() {
+    const element = this.$element('refresh')
+    const animation = element.animate(keyframes, {})
+    animation.play()
+    this.$emit('refresh')
+  },
+  qrcodeHandler() {
+    barcode.scan({
+      success: (data) => {
+        this.$emit('scan', data)
+        console.log(`handling success: ${data.result}`)
+      },
+      fail: (data, code) => {
+        console.log(`handling fail, code = ${code}`)
+      },
+    })
+  },
+  urlHandler() {
+    this.$emit('search')
+  },
+  homeHandler() {
+    router.back()
+  },
+  menuHandler() {
+    this.$emit('menu')
+  },
+}
+</script>
+<style>
+.wrap {
+  padding: 0 20px;
+  height: 120px;
+  justify-content: space-between;
+  align-items: center;
+}
+.tab {
+  width: 100%;
+  justify-content: center;
+}
+.location {
+  flex-shrink: 0;
+  height: 60px;
+  border: 4px solid #000;
+  border-radius: 15px;
+  width: 180px;
+  margin: 0 20px;
+}
+.location text {
+  width: 100%;
+  padding: 0 20px;
+  lines: 1;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+text {
+  color: #000;
+  width: 100%;
+  text-align: center;
+}
+</style>

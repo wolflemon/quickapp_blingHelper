@@ -1,0 +1,69 @@
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<template>
+  <div class="wrap">
+    <div class="tab">
+      <q-icon type="homepage" size="28" color="#000"></q-icon>
+    </div>
+    <div class="tab">
+      <q-icon
+        type="favorite"
+        size="26"
+        color="#000"
+        onclick="favoriteHandler"
+      ></q-icon>
+    </div>
+    <div class="tab" onclick="menuHandler">
+      <q-icon type="menu-fill" size="28" color="#000"></q-icon>
+    </div>
+  </div>
+</template>
+<script>
+import router from '@system.router'
+import barcode from '@system.barcode'
+
+export default {
+  favoriteHandler() {
+    router.push({
+      uri: 'pages/history',
+    })
+  },
+  menuHandler() {
+    this.$emit('menu')
+  },
+}
+</script>
+<style>
+.wrap {
+  padding: 0 20px;
+  height: 120px;
+  justify-content: space-between;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+}
+.tab {
+  width: 100%;
+  justify-content: center;
+}
+.location {
+  flex-shrink: 0;
+  height: 60px;
+  border: 4px solid #000;
+  border-radius: 15px;
+  width: 180px;
+  margin: 0 20px;
+}
+.location text {
+  width: 100%;
+  padding: 0 20px;
+  lines: 1;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+text {
+  color: #000;
+  width: 100%;
+  text-align: center;
+}
+</style>

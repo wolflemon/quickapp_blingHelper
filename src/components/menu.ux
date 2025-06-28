@@ -1,0 +1,238 @@
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<template>
+  <div class="wrap">
+    <div class="header">
+      <div class="user">
+        <div class="head">
+          <q-icon type="love-fill" size="32" color="#ed3f14"></q-icon>
+        </div>
+        <div class="login">
+          <text class="login-btn">红心浏览器</text>
+          <text class="more">发现更多心爱的你~</text>
+        </div>
+      </div>
+      <div class="tool">
+        <q-icon
+          onclick="shareClick"
+          type="share"
+          size="24"
+          color="#000"
+        ></q-icon>
+        <q-icon
+          onclick="gotoPage('pages/setting')"
+          type="scenes"
+          size="24"
+          color="#000"
+        ></q-icon>
+      </div>
+    </div>
+    <div class="content">
+      <div class="item">
+        <q-icon
+          onclick="gotoPage('pages/download')"
+          type="download"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>下载管理</text>
+      </div>
+      <div class="item">
+        <q-icon
+          onclick="gotoPage('pages/books')"
+          type="ebook"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>我的书架</text>
+      </div>
+      <div class="item {{page==='index'?'disabled':''}}">
+        <q-icon
+          onclick="addFavorite"
+          type="favorite"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>添加书签</text>
+      </div>
+      <div class="item">
+        <q-icon
+          onclick="gotoPage('pages/history')"
+          type="top-list"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>书签历史</text>
+      </div>
+      <div class="item">
+        <q-icon
+          onclick="changeModeHandler"
+          type="browser{{mode==='open'?'-fill':''}}"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>无痕模式</text>
+      </div>
+      <div class="item">
+        <q-icon
+          onclick="changeBookModeHandler"
+          type="view-picture{{book==='open'?'-fill':''}}"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>小说模式</text>
+      </div>
+      <div class="item">
+        <q-icon
+          onclick="gotoPage('pages/feedback')"
+          type="feedback"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>投诉反馈</text>
+      </div>
+      <div class="item">
+        <q-icon
+          onclick="addDesktop"
+          type="backsides"
+          size="36"
+          color="#000"
+        ></q-icon>
+        <text>加入桌面</text>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import router from '@system.router'
+import shortcut from '@system.shortcut'
+import prompt from '@system.prompt'
+
+export default {
+  data() {
+    return {
+      mode: 'close',
+      book: 'close',
+    }
+  },
+  props: {
+    page: {
+      type: String,
+      default: 'index',
+    },
+  },
+  async onInit() {
+    this.mode = await getStorageData('MODE')
+  },
+  close() {
+    this.$emit('close')
+  },
+  shareClick() {
+    this.$emit('share')
+  },
+  gotoPage(path) {
+    router.push({
+      uri: path,
+    })
+    this.close()
+  },
+  async changeModeHandler() {
+    await setBrowserMode()
+    this.mode = await getStorageData('MODE')
+  },
+  async changeBookModeHandler() {
+    await setBookMode()
+    this.book = await getStorageData('BOOK')
+  },
+  addFavorite() {
+    this.$emit('favor')
+  },
+  addDesktop() {
+    shortcut.hasInstalled({
+      success: (ret) => {
+        if (ret) {
+          prompt.showToast({
+            message: '已创建桌面图标',
+          })
+        } else {
+          shortcut.install({
+            success: () => {
+              prompt.showToast({
+                message: '成功创建桌面图标',
+              })
+              this.close()
+            },
+            fail: (errmsg, errcode) => {
+              console.log(`${errcode}: ${errmsg}`)
+            },
+          })
+        }
+      },
+    })
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  flex-direction: column;
+  .header {
+    height: 200px;
+    padding: 0 40px;
+    justify-content: space-between;
+    align-items: center;
+    .user {
+      .head {
+        height: 100px;
+        width: 100px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 100%;
+        border: 4px solid #535353;
+      }
+      .login {
+        flex-direction: column;
+        justify-content: center;
+        margin-left: 20px;
+        .login-btn {
+          color: #000;
+        }
+        .more {
+          font-size: 20px;
+        }
+      }
+    }
+    .tool {
+      width: 220px;
+      height: 100px;
+      padding: 0 20px;
+      background-color: #f8f8f8;
+      border-radius: 30px;
+      justify-content: space-around;
+    }
+  }
+  .content {
+    flex-wrap: wrap;
+    .item {
+      justify-content: center;
+      align-items: center;
+      width: 25%;
+      height: 160px;
+      flex-direction: column;
+      text {
+        color: #000;
+        margin-top: 6px;
+        font-size: 20px;
+      }
+    }
+    .item:active {
+      background-color: #f8f8f8;
+      border-radius: 10px;
+    }
+  }
+}
+.disabled {
+  opacity: 0.3;
+}
+.disabled:active {
+  background-color: #fff;
+}
+</style>

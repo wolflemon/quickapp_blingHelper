@@ -1,0 +1,123 @@
+{
+  "package": "com.example.demo",
+  "name": "demo",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minPlatformVersion": 1070,
+  "icon": "/common/logo.png",
+  "deviceTypeList": [
+    "phone"
+  ],
+  "features": [
+    {
+      "name": "system.prompt"
+    },
+    {
+      "name": "system.router"
+    },
+    {
+      "name": "system.shortcut"
+    },
+    {
+      "name": "system.barcode"
+    },
+    {
+      "name": "service.share",
+      "params": {
+        "appSign": "MIID6DCCAtCgAwIBAgIJAJYMREOpnZhcMA0GCSqGSIb3DQEBCwUAMIGIMQswCQYDVQQGEwJaSDESMBAGA1UECAwJR3VhbmdEb25nMRIwEAYDVQQHDAlTaGVuIFpoZW4xEDAOBgNVBAoMB0NoaSBaaGkxEDAOBgNVBAsMB0NoaSBaaGkxDDAKBgNVBAMMA3p4aDEfMB0GCSqGSIb3DQEJARYQNTEzMzM3NzY1QHFxLmNvbTAeFw0yMTA0MTUwMzUyMTVaFw0zMTA0MTMwMzUyMTVaMIGIMQswCQYDVQQGEwJaSDESMBAGA1UECAwJR3VhbmdEb25nMRIwEAYDVQQHDAlTaGVuIFpoZW4xEDAOBgNVBAoMB0NoaSBaaGkxEDAOBgNVBAsMB0NoaSBaaGkxDDAKBgNVBAMMA3p4aDEfMB0GCSqGSIb3DQEJARYQNTEzMzM3NzY1QHFxLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAPnqfloSqWADKzDMdzDgLN3HrmVfzjP29ee9xrWc8sUurjfWw0Pe9IlA6zOH+pbeE/BYvWhLfChozhY0AfbrgsbrTNRVm+KRjDyFXVU1FFSuesN2NE0rw7g8PwPwgd1EUWSSc4LPCYMA1JOuBRN6E26w/AYr8dwGZxY2JexccY/4ist+jsKaJY40+MGgqkiIf5wxhPcmuSDK3aasl1QL45Pce1Kt9cE7uIpylbOipRa+L7Y+uYxbRHTm482xlCn6pnwCcT5HYtoJXD//77sz7D8LOKWRXE7oX55qzdKPjz5NtR4qG5uvwJPaLzme/4t0mXvZan/7XxVIlcuuG8IU8JMCAwEAAaNTMFEwHQYDVR0OBBYEFJJlljU1khbOfDXiKPLtFITqXMblMB8GA1UdIwQYMBaAFJJlljU1khbOfDXiKPLtFITqXMblMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAGKOWda9JWxcFdt9GemNxVbL+0ajFFazViudSbITrXtEvgOMPvvaWOW1ctt8ei2wBhHZIHBZZJiwtG0oIIAqd4p0Gced3AjJejSolG6FO2mJi35qpCjUd4iV6b0EuI3tdwSqcgrK6ehwymQxSkw43MKVYK1FgNew2GaJAt2tZF+7TBCRzI7bjfHsRiUlMk3cSJ+bJ7UgI8iVZYlc9if5pa02k/izIvndmRSROG6y5RzbA9FhlFjR9D760+Dfv6zuSnnVXVNG253LOj1xuQ2dZ5tJR2/9EXPuHu4aFeLl3IbP5bUyYTnG+2NLvC1xkgXYfopGH3XW9N+09HZdaluZEoX=",
+        "wxKey": "wxbb6beef090e26780"
+      }
+    },
+    { 
+      "name": "system.media" 
+    },
+    { 
+      "name": "service.texttoaudio"
+    },
+    { "name": "system.permission" },
+    { "name": "system.image" },
+    { "name": "system.fetch" },
+    { "name": "system.file" }
+  ],
+  "permissions": [
+    {
+      "name": "ohos.permission.CAMERA"
+    },
+    {
+      "name": "ohos.permission.RECORD_AUDIO"
+    }
+  ],
+  "template/official": "browser-template",
+  "config": {
+    "logLevel": "debug"
+  },
+  "router": {
+    "entry": "pages/home",
+    "pages": {
+      "pages/home": {
+        "component": "index"
+      },
+      "pages/detail": {
+        "component": "index"
+      },
+      "pages/feedback": {
+        "component": "index"
+      },
+      "pages/setting": {
+        "component": "index"
+      },
+      "pages/history": {
+        "component": "index"
+      },
+      "pages/books": {
+        "component": "index"
+      },
+      "pages/download": {
+        "component": "index"
+      },
+      "pages/about": {
+        "component": "index"
+      },
+      "pages/privacy": {
+        "component": "index"
+      }
+    }
+  },
+  "display": {
+    "statusBarTextStyle": "dark",
+    "statusBarBackgroundOpacity": 0,
+    "statusBarImmersive": true,
+    "menuBarData": {
+      "menuBar": false
+    },
+    "pages": {
+      "pages/home": {
+        "titleBar": false
+      },
+      "pages/detail": {
+        "titleBar": false
+      },
+      "pages/feedback": {
+        "titleBar": false
+      },
+      "pages/setting": {
+        "titleBar": false
+      },
+      "pages/history": {
+        "titleBar": false
+      },
+      "pages/books": {
+        "titleBar": false
+      },
+      "pages/download": {
+        "titleBar": false
+      },
+      "pages/about": {
+        "titleBar": false
+      },
+      "pages/privacy": {
+        "titleBar": false
+      }
+    }
+  }
+}

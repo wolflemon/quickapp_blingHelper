@@ -1,0 +1,26 @@
+<import name="q-titlebar" src="qaui/src/components/titlebar/index"></import>
+
+<template>
+  <div class="wrap">
+    <q-titlebar back="true" title="我的下载"></q-titlebar>
+    <image class="no-data" src="/common/no-data.webp"></image>
+  </div>
+</template>
+<script>
+export default {
+  data() {
+    return {}
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  padding-top: 60px;
+  flex-direction: column;
+  .no-data {
+    height: 400px;
+    margin-top: 400px;
+    align-self: center;
+  }
+}
+</style>

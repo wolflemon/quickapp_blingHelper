@@ -1,0 +1,127 @@
+<import name="q-titlebar" src="qaui/src/components/titlebar/index"></import>
+<import name="q-tabs" src="qaui/src/components/tabs/index"></import>
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<import name="my-avatar" src="apex-ui/components/avatar/index"></import>
+
+<template>
+  <div class="wrap">
+    <q-tabs
+      index="0"
+      type="default"
+      class="q-tabs"
+      data="{{ dataDefalut1 }}"
+      active-color="#456fff"
+      background="#FFF"
+      active-background="#FFF"
+      ontap="changeTabbar"
+    >
+      <div class="item-content">
+        <image if="!favorite.length" src="/common/no-data.webp"></image>
+        <div class="item" for="item in favorite" onclick="linkClick(item.url)">
+          <my-avatar size="small">{{ item.title.slice(0, 1) }}</my-avatar>
+          <div class="website">
+            <text class="title">{{ item.title }}</text>
+            <text class="url">{{ item.url }}</text>
+          </div>
+        </div>
+      </div>
+      <div class="item-content">
+        <image if="!history.length" src="/common/no-data.webp"></image>
+        <div class="item" for="item in history" onclick="linkClick(item.url)">
+          <my-avatar size="small">{{ item.title.slice(0, 1) }}</my-avatar>
+          <div class="website">
+            <text class="title">{{ item.title }}</text>
+            <text class="url">{{ item.url }}</text>
+          </div>
+        </div>
+      </div>
+    </q-tabs>
+    <div class="back-btn" onclick="backHandler">
+      <q-icon type="backward-fill" size="26"></q-icon>
+    </div>
+  </div>
+</template>
+<script>
+import router from '@system.router'
+import storage from '@system.storage'
+
+export default {
+  data() {
+    return {
+      dataDefalut1: [
+        { label: '书签', describe: '描述一' },
+        { label: '历史记录', describe: '描述二' },
+      ],
+      favorite: [],
+      history: [],
+    }
+  },
+  onInit() {
+    this.getFavoriteData()
+    this.getHistoryData()
+  },
+  async getFavoriteData() {
+    this.favorite = JSON.parse(await getStorageData('FAVORITE'))
+  },
+  async getHistoryData() {
+    this.history = JSON.parse(await getStorageData('HISTORY'))
+  },
+  backHandler() {
+    router.back()
+  },
+  changeTabbar(e) {
+    console.log('tab change', e)
+  },
+  linkClick(url) {
+    router.replace({
+      uri: 'pages/detail',
+      params: {
+        path: url,
+      },
+    })
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  padding-top: 60px;
+  flex-direction: column;
+  .item-content {
+    flex-direction: column;
+    align-items: center;
+    image {
+      margin-top: 500px;
+      width: 500px;
+    }
+    .item {
+      width: 90%;
+      height: 100px;
+      align-items: center;
+      margin: 10px;
+      .website {
+        margin-left: 20px;
+        flex-direction: column;
+        .title {
+          lines: 1;
+          text-overflow: ellipsis;
+          font-weight: bold;
+          color: #000;
+        }
+        .f77d1ed7 {
+          color: #f0f8ff;
+        }
+        .url {
+          font-size: 26px;
+          lines: 1;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+  .back-btn {
+    position: fixed;
+    top: 90px;
+    left: 20px;
+  }
+}
+</style>

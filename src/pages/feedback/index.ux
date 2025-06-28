@@ -1,0 +1,97 @@
+<import name="q-titlebar" src="qaui/src/components/titlebar/index"></import>
+<import name="q-input" src="qaui/src/components/input/index"></import>
+<import name="q-textarea" src="qaui/src/components/textarea/index"></import>
+<import name="q-icon" src="qaui/src/components/icon/index"></import>
+<import name="q-button" src="qaui/src/components/button/index"></import>
+<import name="my-select" src="apex-ui/components/select/index"></import>
+
+<template>
+  <div class="wrap">
+    <q-titlebar back="true" title="意见反馈"></q-titlebar>
+    <div class="select" onclick="singleSelect">
+      <div class="text">
+        <text class="title">投诉类型</text>
+        <text class="reason">{{ reason }}</text>
+      </div>
+      <q-icon type="forward-arrow" size="20"></q-icon>
+    </div>
+    <q-textarea
+      onchange="changeHandler"
+      placeholder="请输入您的意见！"
+      maxlength="140"
+    ></q-textarea>
+    <q-input
+      onchange="changeHandler"
+      type="number"
+      title="联系方式"
+      placeholder="请输入您的联系方式"
+    ></q-input>
+    <my-select id="reason" oncomfirm="singleClose"></my-select>
+    <q-button class="button" type="primary" onclick="submit">提交反馈</q-button>
+  </div>
+</template>
+<script>
+import prompt from '@system.prompt'
+import router from '@system.router'
+
+export default {
+  data() {
+    return {
+      reason: '非自愿打开应用',
+      feedback: '',
+      contact: '',
+    }
+  },
+  singleSelect() {
+    let opt = ['非自愿打开应用', '用户体验投诉', '功能异常投诉', '其他问题']
+    this.$child('reason').showSelect({
+      options: opt,
+    })
+  },
+  singleClose(evt) {
+    this.reason = evt.detail.data || '非自愿打开应用'
+  },
+  changeHandler({ detail }) {
+    console.log(detail)
+    if (!!detail.text) {
+      this.feedback = detail.text
+    } else {
+      this.contact = detail
+    }
+  },
+  submit() {
+    if (!this.feedback.length) {
+      prompt.showToast({ message: '请填写您的意见！' })
+      return
+    }
+    prompt.showToast({ message: '提交成功！' })
+    router.back()
+    console.log('feedback', this.reason, this.feedback, this.contact)
+  },
+}
+</script>
+<style lang="less">
+.wrap {
+  flex-direction: column;
+  padding-top: 60px;
+  .select {
+    height: 100px;
+    background-color: #ffffff;
+    justify-content: space-between;
+    padding: 0 40px;
+    .f77d1ed7 {
+      color: #f0f8ff;
+    }
+    .title {
+      margin-right: 40px;
+    }
+    text {
+      color: #000;
+    }
+  }
+  .button {
+    margin-top: 50px;
+    margin-left: 40px;
+  }
+}
+</style>
